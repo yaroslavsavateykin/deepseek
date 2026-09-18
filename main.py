@@ -1,6 +1,8 @@
 from openai import OpenAI
 import pypandoc
+from pypdf import PdfReader
 import os
+
 
 from dotenv import load_dotenv
 
@@ -13,19 +15,24 @@ class TaskParser:
     def parse_to_md(input_file: str, output_folder: str) -> None:
         output_md = input_file.strip(".pdf") + ".md"
 
-        if not input_file.endswith(".pdf"):
+        if input_file.endswith(".pdf"):
+            reader = PdfReader(input_file)
+            output = "\n".join(x.extract_text(0) for x in reader.pages)
+
+        else:
             output = pypandoc.convert_file(
                 input_file,
                 "gfm",
-                outputfile=output_md,
+                outputfile=f"{output_folder}/{output_md}",
                 extra_args=[f"--extract-media=./{output_folder}/images"],
             )
-        else:
-
-            
 
         print(output)
 
 
 if __name__ == "__main__":
-    TaskParser.parse_to_md("source/task-chem-11-Kalin-mun-08-9.pdf", "")
+    print(os.walk("source/"))
+    for dirpath, dirnames, filenames in os.walk("source/"):
+        print(filenames)
+        for filename in filenames:
+            TaskParser.parse_to_md(f"source/{filename}", "")
